@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { ref } from 'vue'
 const { t } = useI18n()
 
 const columns = [
@@ -29,10 +30,38 @@ const removeSubscription = async(row: any) => {
   if (data.value.code === 'SUCCESS')
     proxies.value.subs = data.value.data.touch.subscriptions
 }
+
+// 新增的数据和方法
+const startRow = ref(1)
+const endRow = ref(1)
+
+const selectRange = () => {
+  const table = document.querySelector('.el-table__body-wrapper') as HTMLElement
+  const rows = table.querySelectorAll('.el-table__row')
+
+  // 清空所有选中状态
+  selectRows.length = 0
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]
+    const index = i + 1
+    if (index >= startRow.value && index <= endRow.value) {
+      (row.querySelector('.el-table__cell .el-checkbox__input') as HTMLInputElement).click()
+    }
+  }
+}
+
 </script>
 
 <template>
   <OperateImport />
+
+  <!-- 新增的输入框和按钮 -->
+  <div class="mb-4">
+    <ElInputNumber v-model="startRow" :min="1" placeholder="开始行数" />
+    <ElInputNumber v-model="endRow" :min="1" placeholder="结束行数" class="ml-2" />
+    <ElButton @click="selectRange" class="ml-2">选中</ElButton>
+  </div>
 
   <ElButton
     v-if="!(Array.isArray(selectRows) && selectRows.length === 0)"
@@ -41,6 +70,16 @@ const removeSubscription = async(row: any) => {
   >
     {{ t('operations.delete') }}
   </ElButton>
+
+  <style scoped>
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.ml-2 {
+  margin-left: 0.5rem;
+}
+</style>
 
   <ElTable :data="proxies.subs" @selection-change="handleSelectionChange">
     <ElTableColumn type="selection" width="55" />
